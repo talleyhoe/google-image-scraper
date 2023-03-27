@@ -52,11 +52,15 @@ def get_arguments(argv=sys.argv):
     parser.add_argument("-d", "--directory",
                         help="where to save scraped images",
                         type=str,
-                        nargs="?",
-                        default=get_default_dir(argv[1]))
+                        nargs="?")
     parser.add_argument("-t", "--threads",
                         help="How many threads to spawn and download from",
                         type=check_pos_int,
                         nargs="?",
                         default=1)
-    return parser.parse_args(argv[1:])
+    args = parser.parse_args(argv[1:])
+    # Set default directory
+    if args.directory is None:
+        print(args.keyword[0])
+        args.directory = get_default_dir(args.keyword[0])
+    return args
