@@ -1,4 +1,4 @@
-import argparse, sys, threading
+import sys
 
 from cli import get_arguments
 from scraper import scrape_images
