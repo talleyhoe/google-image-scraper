@@ -157,13 +157,6 @@ def get_manifest(search_key: str, image_cnt: int):
     print("Found {} of {} image sources".format(manifest_len, image_cnt))
     return list(img_manifest.items())[0:manifest_len]
 
-def download_from_manifest(manifest_item, directory):
-    print(f"directory: {directory}")
-    id = manifest_item[0]
-    url = manifest_item[1]
-    save_path = os.path.join(directory, id)
-    download_image(url, save_path)
-
 ################################# main api ####################################
      
 def scrape_images(search_key, image_cnt, directory, threads):
@@ -205,9 +198,9 @@ def test():
     globals()['DEBUG'] = True
 
     search_key = "arch linux"
-    image_cnt  = 5
+    image_cnt  = 20
     directory  = get_default_dir(search_key)
-    threads    = 10
+    threads    = 4
 
     scrape_images(search_key, image_cnt, directory, threads)
     
