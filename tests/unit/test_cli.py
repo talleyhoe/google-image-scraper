@@ -1,8 +1,8 @@
 import os, sys, unittest
+from random import shuffle
 
 rootdir = os.path.abspath('./')
 sys.path.insert(1, rootdir)
-print(sys.path)
 from src.cli import get_arguments
 
 # Directory specification is a testing weakpoint
@@ -90,6 +90,5 @@ class TestCli(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    from random import shuffle
     unittest.main()
 
