@@ -16,6 +16,7 @@ def get_download_path():
 
 def get_default_dir(search_key: str):
     """Generate the default folder to store scraped images in"""
+    search_key = search_key.replace(" ", ".")
     default_dir = get_download_path()
     default_dir = os.path.join(default_dir, "google-image-scraper")
     default_dir = os.path.join(default_dir, search_key)
