@@ -1,5 +1,4 @@
 import argparse, os, sys
-from enum import Enum
 
 # Should revisit this to look for xdg_downloads in env
 def get_download_path():
@@ -60,30 +59,45 @@ def get_arguments(argv=sys.argv):
                         nargs="?",
                         default=1)
     parser.add_argument("-s", "--size",
-                        help="Restrict your search to a certain size of image. Can be 'large', 'medium', or 'icon'.",
+                        help="Restrict your search to a certain size of image.",
                         type=str,
                         nargs="?",
-                        choices=['large','medium','icon'],
-                        default='')
-    parser.add_argument("--color",
-                        help="Search for a certain color of image. Can be 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown', 'grayscale', or 'transparent'.",
+                        choices=['large','medium','icon', '400x300', '640x480', '800x600', '1024x768', '2mp', '4mp', '8mp', '10mp', '12mp', '15mp', '20mp', '40mp', '70mp'])
+    parser.add_argument("-a", "--aspectratio",
+                        help="Restrict to specific aspect ratios.",
                         type=str,
                         nargs="?",
-                        choices=['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown', 'grayscale', 'transparent'],
-                        default='')
+                        choices=['tall', 'square', 'wide', 'panoramic'])
+    parser.add_argument("-i", "--color",
+                        help="Search for a certain color of image.",
+                        type=str,
+                        nargs="?",
+                        choices=['color', 'grayscale', 'transparent', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown'])
     parser.add_argument("-k", "--type",
-                        help="The type of image to search for. Can be 'clipart', 'lineart', or 'animated'.",
+                        help="The type of image to search for.",
                         type=str,
                         nargs="?",
-                        choices=['clipart', 'lineart', 'animated'],
-                        dest="imgtype",
-                        default='')
+                        choices=['face', 'photo', 'clipart', 'lineart', 'animated'],
+                        dest="imgtype")
+    parser.add_argument("-r", "--region",
+                        help="Get results from a specific region.",
+                        type=str,
+                        nargs="?")
+    parser.add_argument("-f", "--filetype",
+                        help="Search for a specific file extension.",
+                        type=str,
+                        nargs="?",
+                        choices=['jpg', 'gif', 'png', 'bmp', 'svg', 'webp', 'ico', 'raw'])
+    parser.add_argument("-u", "--usage",
+                        help="Specify usage rights.",
+                        type=str,
+                        nargs="?",
+                        choices=['cc', 'other'])
     parser.add_argument("-p", "--safesearch",
                         help="Force the use of a specific safesearch setting. Can be 'on' or 'off'.",
                         type=str,
                         nargs="?",
-                        choices=['on', 'off'],
-                        default='')
+                        choices=['on', 'off'])
     args = parser.parse_args(argv[1:])
     # Set default directory
     if args.directory is None:

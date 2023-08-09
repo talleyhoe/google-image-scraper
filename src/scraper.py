@@ -43,75 +43,100 @@ def add_filetype(file_path: str):
 
 
 def process_image_size(val: str):
+    key = 'isz:'
     if (val == 'large'):
-        return "isz:l"
+        return key + 'l'
     elif (val == 'medium'):
-        return "isz:m"
+        return key + 'm'
     elif (val == 'icon'):
-        return "isz:i"
+        return key + 'i'
+    elif (val in ['400x300', '640x480', '800x600', '1024x768']):
+        key += 'lt%2Cislt:'
+        if (val == '400x300'):
+            return key + "qsvga"
+        elif (val == '640x480'):
+            return key + "vga"
+        elif (val == '800x600'):
+            return key + "svga"
+        elif (val == '1024x768'):
+            return key + "xga"
+    elif (val in ['2mp','4mp','6mp','8mp','10mp','12mp','15mp','20mp','40mp','70mp']):
+        return key + 'lt%2Cislt:' + val
     else:
         return ""
 
+def process_image_aspectratio(val: str):
+    key = 'iar:'
+    if (val == 'tall'):
+        return key + 't'
+    elif (val == 'square'):
+        return key + 's'
+    elif (val == 'wide'):
+        return key + 'w'
+    elif (val == 'panoramic'):
+        return key + 'xw'
+
 def process_image_color(val: str):
-    if (val == "grayscale"):
+    if (val == "color"):
+        return "ic:color"
+    elif (val == "grayscale"):
         return "ic:gray"
     elif (val == "transparent"):
         return "ic:trans"
-    elif (val == "red"):
-        return "ic:specific%2Cisc:red"
-    elif (val == "orange"):
-        return "ic:specific%2Cisc:orange"
-    elif (val == "yellow"):
-        return "ic:specific%2Cisc:yellow"
-    elif (val == "green"):
-        return "ic:specific%2Cisc:green"
-    elif (val == "teal"):
-        return "ic:specific%2Cisc:teal"
-    elif (val == "blue"):
-        return "ic:specific%2Cisc:blue"
-    elif (val == "purple"):
-        return "ic:specific%2Cisc:purple"
-    elif (val == "pink"):
-        return "ic:specific%2Cisc:pink"
-    elif (val == "white"):
-        return "ic:specific%2Cisc:white"
-    elif (val == "gray"):
-        return "ic:specific%2Cisc:gray"
-    elif (val == "black"):
-        return "ic:specific%2Cisc:black"
-    elif (val == "brown"):
-        return "ic:specific%2Cisc:brown"
+    elif (val in ['red','orange','yellow','green','teal','blue','purple','pink','white','gray','black','brown']):
+        return "ic:specific%2Cisc:" + val
     else:
         return ""
 
 def process_image_type(val: str):
-    if (val == "clipart"):
-        return "itp:clipart"
-    elif (val == "lineart"):
-        return "itp:lineart"
-    elif (val == "animated"):
-        return "itp:animated"
+    if (val in ['face', 'photo', 'clipart', 'lineart', 'animated']):
+        return 'itp:' + val
     else:
         return ""
+
+def process_image_region(val: str):
+    if (val == ''):
+        return ''
+    else:
+        return 'ctr:country' + val.upper()
+
+def process_image_filetype(val: str):
+    if (val in ['jpg', 'gif', 'png', 'bmp', 'svg', 'webp', 'ico', 'raw']):
+        return 'ift:' + val
+
+def process_image_usage(val: str):
+    key = 'sur:'
+    if (val == 'cc'):
+        return key + 'cl'
+    elif (val == 'other'):
+        return key + 'ol'
+    else:
+        return ''
 
 def process_safesearch(val: str):
-    if (val == "on"):
-        return "on"
-    elif (val == "off"):
-        return "off"
+    if (val in ["on", "off"]):
+        return val
     else:
         return ""
 
 
-def setup_url(searchurl: str, imgsize: str, imgcolor: str, imgtype: str, safesearch: str):
+def setup_url(searchurl: str, imgsize: str, imgaspectratio: str, imgcolor: str, imgtype: str, imgregion: str, imgfiletype: str, imgusage: str, safesearch: str):
     features = [searchurl]
     subfeatures = [[],[]]
     if (imgsize != None):
         subfeatures[0] += [process_image_size(imgsize)]
+    if (imgaspectratio != None):
+        subfeatures[0] += [process_image_aspectratio(imgaspectratio)]
     if (imgcolor != None):
         subfeatures[0] += [process_image_color(imgcolor)]
     if (imgtype != None):
         subfeatures[0] += [process_image_type(imgtype)]
+    if (imgregion != None):
+        subfeatures[0] += [process_image_region(imgregion)]
+    if (imgfiletype != None):
+        subfeatures[0] += [process_image_filetype(imgfiletype)]
+    if (imgusage != None):
+        subfeatures[0] += [process_image_usage(imgusage)]
     if (safesearch != None):
         subfeatures[1] += [process_safesearch(safesearch)]
     
@@ -122,7 +147,7 @@ def setup_url(searchurl: str, imgsize: str, imgcolor: str, imgtype: str, safesea
         features += ["tbs=" + delim2.join(subfeatures[0])]
     if (subfeatures[1] != []):
         features += ["safe=" + delim2.join(subfeatures[1])]
-    
+    print(delim1.join(features))
     return delim1.join(features)
 
 
@@ -244,7 +269,7 @@ def get_manifest(search_key: str, image_cnt: int):
 
 ################################# main api ####################################
      
-def scrape_images(search_key, image_cnt, directory, threads, size, color, imgtype, safesearch):
+def scrape_images(search_key, image_cnt, directory, threads, size, aspectratio, color, imgtype, region, filetype, usage, safesearch):
     """ 
     Request manifest, generate paths, save files, get filetype. 
     This is the only function that should be called externally. 
@@ -260,7 +285,7 @@ def scrape_images(search_key, image_cnt, directory, threads, size, color, imgtyp
     if not os.path.exists(directory):
         os.makedirs(directory)
     global search_url
-    search_url = setup_url(search_url, size, color, imgtype, safesearch)
+    search_url = setup_url(search_url, size, aspectratio, color, imgtype, region, filetype, usage, safesearch)
     id_url_manifest = get_manifest(search_key, image_cnt)
     with ThreadPoolExecutor(max_workers=threads) as pool:
         with tqdm(total=len(id_url_manifest)) as progress:
