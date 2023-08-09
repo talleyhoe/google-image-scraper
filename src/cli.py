@@ -1,4 +1,5 @@
 import argparse, os, sys
+from enum import Enum
 
 # Should revisit this to look for xdg_downloads in env
 def get_download_path():
@@ -29,7 +30,6 @@ def check_pos_int(val: int):
     else:
         raise ValueError
 
-
 def get_arguments(argv=sys.argv):
     """ 
     The cli front end for the scraper.
@@ -40,7 +40,7 @@ def get_arguments(argv=sys.argv):
     Returns:
     parser.parse_args() -- A struct with all required info to run the scraper
     """
-    parser = argparse.ArgumentParser(description="Scrape google for images")
+    parser = argparse.ArgumentParser(description="Scrape Google for images")
     parser.add_argument("keyword", 
                         help="the phrase used to find images",
                         type=str,
@@ -59,6 +59,31 @@ def get_arguments(argv=sys.argv):
                         type=check_pos_int,
                         nargs="?",
                         default=1)
+    parser.add_argument("-s", "--size",
+                        help="Restrict your search to a certain size of image. Can be 'large', 'medium', or 'icon'.",
+                        type=str,
+                        nargs="?",
+                        choices=['large','medium','icon'],
+                        default='')
+    parser.add_argument("--color",
+                        help="Search for a certain color of image. Can be 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown', 'grayscale', or 'transparent'.",
+                        type=str,
+                        nargs="?",
+                        choices=['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown', 'grayscale', 'transparent'],
+                        default='')
+    parser.add_argument("-k", "--type",
+                        help="The type of image to search for. Can be 'clipart', 'lineart', or 'animated'.",
+                        type=str,
+                        nargs="?",
+                        choices=['clipart', 'lineart', 'animated'],
+                        dest="imgtype",
+                        default='')
+    parser.add_argument("-p", "--safesearch",
+                        help="Force the use of a specific safesearch setting. Can be 'on' or 'off'.",
+                        type=str,
+                        nargs="?",
+                        choices=['on', 'off'],
+                        default='')
     args = parser.parse_args(argv[1:])
     # Set default directory
     if args.directory is None:

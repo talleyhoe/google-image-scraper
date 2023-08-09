@@ -41,6 +41,91 @@ def add_filetype(file_path: str):
         eprint(err)
         return 1
 
+
+def process_image_size(val: str):
+    if (val == 'large'):
+        return "isz:l"
+    elif (val == 'medium'):
+        return "isz:m"
+    elif (val == 'icon'):
+        return "isz:i"
+    else:
+        return ""
+
+def process_image_color(val: str):
+    if (val == "grayscale"):
+        return "ic:gray"
+    elif (val == "transparent"):
+        return "ic:trans"
+    elif (val == "red"):
+        return "ic:specific%2Cisc:red"
+    elif (val == "orange"):
+        return "ic:specific%2Cisc:orange"
+    elif (val == "yellow"):
+        return "ic:specific%2Cisc:yellow"
+    elif (val == "green"):
+        return "ic:specific%2Cisc:green"
+    elif (val == "teal"):
+        return "ic:specific%2Cisc:teal"
+    elif (val == "blue"):
+        return "ic:specific%2Cisc:blue"
+    elif (val == "purple"):
+        return "ic:specific%2Cisc:purple"
+    elif (val == "pink"):
+        return "ic:specific%2Cisc:pink"
+    elif (val == "white"):
+        return "ic:specific%2Cisc:white"
+    elif (val == "gray"):
+        return "ic:specific%2Cisc:gray"
+    elif (val == "black"):
+        return "ic:specific%2Cisc:black"
+    elif (val == "brown"):
+        return "ic:specific%2Cisc:brown"
+    else:
+        return ""
+
+def process_image_type(val: str):
+    if (val == "clipart"):
+        return "itp:clipart"
+    elif (val == "lineart"):
+        return "itp:lineart"
+    elif (val == "animated"):
+        return "itp:animated"
+    else:
+        return ""
+
+def process_safesearch(val: str):
+    if (val == "on"):
+        return "on"
+    elif (val == "off"):
+        return "off"
+    else:
+        return ""
+
+
+def setup_url(searchurl: str, imgsize: str, imgcolor: str, imgtype: str, safesearch: str):
+    features = [searchurl]
+    subfeatures = [[],[]]
+    if (imgsize != None):
+        subfeatures[0] += [process_image_size(imgsize)]
+    if (imgcolor != None):
+        subfeatures[0] += [process_image_color(imgcolor)]
+    if (imgtype != None):
+        subfeatures[0] += [process_image_type(imgtype)]
+    if (safesearch != None):
+        subfeatures[1] += [process_safesearch(safesearch)]
+    
+    delim1 = "&"
+    delim2 = "%2C"
+    
+    if (subfeatures[0] != []):
+        features += ["tbs=" + delim2.join(subfeatures[0])]
+    if (subfeatures[1] != []):
+        features += ["safe=" + delim2.join(subfeatures[1])]
+    
+    return delim1.join(features)
+
+
 ############################# scraping helpers ################################
 
 def get_image_urls(query: str, page: int):
@@ -159,7 +244,7 @@ def get_manifest(search_key: str, image_cnt: int):
 
 ################################# main api ####################################
      
-def scrape_images(search_key, image_cnt, directory, threads):
+def scrape_images(search_key, image_cnt, directory, threads, size, color, imgtype, safesearch):
     """ 
     Request manifest, generate paths, save files, get filetype. 
     This is the only function that should be called externally. 
@@ -174,7 +259,8 @@ def scrape_images(search_key, image_cnt, directory, threads):
         print("savedir: {}".format(directory))
     if not os.path.exists(directory):
         os.makedirs(directory)
-
+    global search_url
+    search_url = setup_url(search_url, size, color, imgtype, safesearch)
     id_url_manifest = get_manifest(search_key, image_cnt)
     with ThreadPoolExecutor(max_workers=threads) as pool:
         with tqdm(total=len(id_url_manifest)) as progress:
