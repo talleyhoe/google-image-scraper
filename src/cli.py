@@ -43,7 +43,7 @@ def get_arguments(argv=sys.argv):
     parser.add_argument("keyword", 
                         help="the phrase used to find images",
                         type=str,
-                        nargs=1)
+                        nargs="?")
     parser.add_argument("-c", "--count",
                         help="How many images to try to scrape",
                         type=check_pos_int,
@@ -62,45 +62,65 @@ def get_arguments(argv=sys.argv):
                         help="Restrict your search to a certain size of image.",
                         type=str,
                         nargs="?",
-                        choices=['large','medium','icon', '400x300', '640x480', '800x600', '1024x768', '2mp', '4mp', '8mp', '10mp', '12mp', '15mp', '20mp', '40mp', '70mp'])
+                        default=None,
+                        choices=["large","medium","icon", "400x300", "640x480",
+                                 "800x600", "1024x768", "2mp", "4mp", "8mp",
+                                 "10mp", "12mp", "15mp", "20mp", "40mp", "70mp"])
     parser.add_argument("-a", "--aspectratio",
                         help="Restrict to specific aspect ratios.",
                         type=str,
                         nargs="?",
-                        choices=['tall', 'square', 'wide', 'panoramic'])
+                        default=None,
+                        choices=["tall", "square", "wide", "panoramic"])
     parser.add_argument("-i", "--color",
                         help="Search for a certain color of image.",
                         type=str,
                         nargs="?",
-                        choices=['color', 'grayscale', 'transparent', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown'])
+                        default=None,
+                        choices=["color", "grayscale", "transparent", "red", 
+                                 "orange", "yellow", "green", "teal", "blue", 
+                                 "purple", "pink", "white", "gray", "black", 
+                                 "brown"])
     parser.add_argument("-k", "--type",
                         help="The type of image to search for.",
                         type=str,
                         nargs="?",
-                        choices=['face', 'photo', 'clipart', 'lineart', 'animated'],
-                        dest="imgtype")
+                        default=None,
+                        choices=["face", "photo", "clipart", 
+                                 "lineart", "animated"],
+                        dest="type")
     parser.add_argument("-r", "--region",
-                        help="Get results from a specific region.",
+                        help="Get results from a specific country.",
                         type=str,
-                        nargs="?")
+                        nargs="?",
+                        default=None)
+    parser.add_argument("-w", "--site",
+                        help="Get results from a specific site or domain.",
+                        type=str,
+                        nargs="?",
+                        default=None)
     parser.add_argument("-f", "--filetype",
                         help="Search for a specific file extension.",
                         type=str,
                         nargs="?",
-                        choices=['jpg', 'gif', 'png', 'bmp', 'svg', 'webp', 'ico', 'raw'])
+                        default=None,
+                        choices=["jpg", "gif", "png", "bmp", 
+                                 "svg", "webp", "ico", "raw"])
     parser.add_argument("-u", "--usage",
                         help="Specify usage rights.",
                         type=str,
                         nargs="?",
-                        choices=['cc', 'other'])
+                        default=None,
+                        choices=["cc", "other"])
     parser.add_argument("-p", "--safesearch",
-                        help="Force the use of a specific safesearch setting. Can be 'on' or 'off'.",
+                        help="Specify safesearch usage. Can be 'on' or 'off'.",
                         type=str,
                         nargs="?",
-                        choices=['on', 'off'])
+                        default="off",
+                        choices=["on", "off"])
     args = parser.parse_args(argv[1:])
     # Set default directory
     if args.directory is None:
         print(args.keyword[0])
-        args.directory = get_default_dir(args.keyword[0])
+        args.directory = get_default_dir(args.keyword)
     return args
