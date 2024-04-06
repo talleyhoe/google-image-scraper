@@ -147,13 +147,13 @@ def get_manifest(search_key: str, image_cnt: int):
     while ( len(img_manifest.items()) < image_cnt ): 
         try:
             results = get_image_urls(search_key, results_page)
-            # if results == {}:
-            #     # No error was thrown, but we still got an empty dict from get_image_urls 
-            #     # Likely means there are no more results on the page.
-            #     # Without this, can get stuck in infinite loop.
-            #     # So, break out of while loop with what we have (if anything)
-            #     manifest_len = len(img_manifest.items())
-            #     break
+            if results == {}:
+                # No error was thrown, but we still got an empty dict from get_image_urls 
+                # Likely means there are no more results on the page.
+                # Without this, can get stuck in infinite loop.
+                # So, break out of while loop with what we have (if anything)
+                manifest_len = len(img_manifest.items())
+                break
 
             img_manifest.update(results)
             results_page += 1
