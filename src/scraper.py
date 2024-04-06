@@ -54,11 +54,12 @@ def get_image_urls(query: str, page: int):
     Returns:
     all_images -- a hash map of structure (id, url)
     """
-
+    print("getting image_urls")
     all_images = {}
 
     try:
         response = requests.get(search_url.format(query, page), headers=headers)
+        print(response)
 
         if (response.status_code == 200):
             json_text = response.content.decode('utf8').removeprefix(")]}'")
@@ -141,6 +142,8 @@ def get_manifest(search_key: str, image_cnt: int):
 
     results_page = 0
     search_key = sanitize_query(search_key)
+
+    print(search_key)
     while ( len(img_manifest.items()) < image_cnt ): 
         try:
             results = get_image_urls(search_key, results_page)
