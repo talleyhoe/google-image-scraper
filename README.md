@@ -1,4 +1,12 @@
 # google-image-scraper
+
+## This project is currently broken
+Google changed their design, which killed the current functionality of this 
+scraper. I have a lot going on right now and don't have time to fix this. I 
+will try to return in June 2024 to create a patch, or an alternative solution
+utilizing the official google api. Sorry, thanks. 
+
+**Project Description**
 A multithreaded Google Images scraper without Chromium. Only requires the python 
 standard library, requests, and a few helper libraries. Aimed at being 
 cross-platform, with a preference towards linux. 
