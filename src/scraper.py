@@ -1,5 +1,6 @@
 import json, os, sys
 from concurrent.futures import ThreadPoolExecutor
+from copy import copy
 
 import filetype
 import requests
@@ -40,6 +41,115 @@ def add_filetype(file_path: str):
         eprint("Couldn't rename file at path {}".format(file_path))
         eprint(err)
         return 1
+
+
+def process_image_size(val: str):
+    # This can be refactored to use maps and eliminate redundancy (test first)
+    key = 'isz:'
+    if (val == 'large'):
+        return key + 'l'
+    elif (val == 'medium'):
+        return key + 'm'
+    elif (val == 'icon'):
+        return key + 'i'
+    elif (val in ['400x300', '640x480', '800x600', '1024x768']):
+        key += 'lt%2Cislt:' 
+        if (val == '400x300'):
+            return key + "qsvga"
+        elif (val == '640x480'):
+            return key + "vga"
+        elif (val == '800x600'):
+            return key + "svga"
+        elif (val == '1024x768'):
+            return key + "xga"
+    elif (val in ['2mp','4mp','6mp','8mp','10mp',
+                  '12mp','15mp','20mp','40mp','70mp']):
+        return key + 'lt%2Cislt:' + val 
+    else:
+        return ""
+
+def process_image_aspectratio(val: str):
+    key = 'iar:'
+    if (val == 'tall'):
+        return key + 't'
+    elif (val == 'square'):
+        return key + 's'
+    elif (val == 'wide'):
+        return key + 'w'
+    elif (val == 'panoramic'):
+        return key + 'xw'
+
+def process_image_color(val: str):
+    if (val == "color"):
+        return "ic:color"
+    elif (val == "grayscale"):
+        return "ic:gray"
+    elif (val == "transparent"):
+        return "ic:trans"
+    elif (val in ['red','orange','yellow','green','teal','blue',
+                  'purple','pink','white','gray','black','brown']):
+        return "ic:specific%2Cisc:" + val
+    else:
+        return ""
+
+def process_image_type(val: str):
+    if (val in ['face', 'photo', 'clipart', 'lineart', 'animated']):
+        return 'itp:' + val
+    else:
+        return ""
+
+def process_image_region(val: str):
+    if (val != None):
+        return 'ctr:country' + val.upper()
+
+def process_image_filetype(val: str):
+    if (val in ['jpg', 'gif', 'png', 'bmp', 'svg', 'webp', 'ico', 'raw']):
+        return 'ift:' + val
+
+def process_image_usage(val: str):
+    key = 'sur:'
+    if (val == 'cc'):
+        return key + 'cl'
+    elif (val == 'other'):
+        return key + 'ol'
+    else:
+        return ''
+
+
+def setup_url(filters):
+    global search_url 
+    filtered_url = copy(search_url)
+
+    features = [search_url]
+    url_ids = []
+
+    filter_keys = list(filters.keys())
+    # Need to confirm we can't put these into the tbs tag
+    if filters["safesearch"] == "on":
+        filtered_url += "&safe=on"
+    if filters["site"] != None:
+        filtered_url += ("&as_sitesearch=" + filters["site"])
+    filter_keys.remove("safesearch")
+    filter_keys.remove("site")
+    # if filters["region"] != None:
+    #     filtered_url += ("&" + process_image_region(filters["region"]))
+    # filter_keys.remove("region")
+
+    # append_val = (lambda l, a: l.append(a) if a is not None)
+    def append_val(l, v):
+        if v is not None:
+            l.append(v)
+    for k in filter_keys:
+        function_name = "process_image_" + k
+        process_function = globals()[function_name]
+        append_val(url_ids, process_function(filters[k]))
+
+    delim = ","
+    if (url_ids[0] != []):
+        filtered_url += "&tbs=" + delim.join(url_ids)
+
+    return filtered_url
+
 
 ############################# scraping helpers ################################
 
@@ -167,7 +277,7 @@ def get_manifest(search_key: str, image_cnt: int):
 
 ################################# main api ####################################
      
-def scrape_images(search_key, image_cnt, directory, threads):
+def scrape_images(search_key, image_cnt, directory, threads, filters):
     """ 
     Request manifest, generate paths, save files, get filetype. 
     This is the only function that should be called externally. 
@@ -177,12 +287,13 @@ def scrape_images(search_key, image_cnt, directory, threads):
     image_cnt -- how many images are we trying to scrape
     directory -- the folder to save scraped images in 
     threads -- how many worker threads to spawn
+    filters -- hashmap of image filters to apply to the search results
     """
     if DEBUG:
         print("savedir: {}".format(directory))
     if not os.path.exists(directory):
         os.makedirs(directory)
-
+    search_url = setup_url(filters)
     id_url_manifest = get_manifest(search_key, image_cnt)
     with ThreadPoolExecutor(max_workers=threads) as pool:
         with tqdm(total=len(id_url_manifest)) as progress:
@@ -210,7 +321,20 @@ def test():
     directory  = get_default_dir(search_key)
     threads    = 4
 
-    scrape_images(search_key, image_cnt, directory, threads)
+    filters = {
+        "size": "large",
+        "aspectratio": "panoramic",
+        "color": "green",
+        "type": "clipart",
+        "region": "CA", # Needs a mapping of inputs to country choices
+                       # Use an import statement and roll in another file
+        "site": "laksjdf",
+        "filetype": "png",
+        "usage": "other",
+        "safesearch": "on"
+    }
+
+    scrape_images(search_key, image_cnt, directory, threads, filters)
     
 
 if __name__ == "__main__":
